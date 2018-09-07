@@ -6,7 +6,7 @@ class Records:
         self.swimlaneUser = swimlaneUser
         self.swimlanePass = swimlanePass
         self.swimlaneHost = swimlaneHost
-        self.swimlane = swimlane = Swimlane(slApiHost, slApiUser, slApiKey, verify_ssl=verifySsl)
+        self.swimlane = swimlane = Swimlane(self.swimlaneHost, self.swimlaneUser, self.swimlanePass, verify_ssl=verifySsl)
 
     def test(self):
         print self.swimlane
