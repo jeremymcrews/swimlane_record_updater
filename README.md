@@ -6,7 +6,7 @@ Common Record Updater for Swimlane Apps.
 https://github.com/jeremymcrews/swimlane_record_updater
 
 # Swimlane Python Logger PyPi.org Link
-https://pypi.org/project/swimlane-python-logger/
+https://pypi.org/project/swimlane-record-updater/
 
 # Swimlane Python Logger PyPi.org Test Link
-https://test.pypi.org/project/swimlane-python-logger/
+https://test.pypi.org/project/swimlane-record-updater/
