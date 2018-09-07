@@ -1,6 +1,7 @@
 from swimlane import Swimlane
 
-class Records:
+
+class SruRecords:
     def __init__(self, swimlaneUser, swimlanePass, swimlaneHost, verifySsl=False):
         self.swimlaneUser = swimlaneUser
         self.swimlanePass = swimlanePass
