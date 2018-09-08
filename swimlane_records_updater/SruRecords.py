@@ -1,20 +1,20 @@
 from swimlane import Swimlane
 from swimlane.core.search import EQ, NOT_EQ, CONTAINS, EXCLUDES, GT, GTE, LT, LTE
-import os
+import re
 
 
 class Setup:
     def __init__(self, sw_config, sw_inputs):
         for k, v in sw_inputs.iteritems():
-            setattr(self, k, v)
+            setattr(self, re.sub(r'([a-z])([A-Z])', r'\1_\2', k).lower(), v)
         for k, v in sw_config.iteritems():
-            setattr(self, k, v)
+            setattr(self, re.sub(r'([a-z])([A-Z])', r'\1_\2', k).lower(), v)
 
 
 class Records(Setup):
     def __init__(self, sw_config, sw_inputs):
         Setup.__init__(self, sw_config, sw_inputs)
-        self.swimlane = Swimlane(self.host, self.apiUser, self.apiKey, verify_ssl=False)
+        self.swimlane = Swimlane(self.host, self.api_user, self.api_key, verify_ssl=False)
         self.app = None
         self.appRaw = None
         self.records = None
