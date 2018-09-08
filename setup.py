@@ -4,17 +4,17 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="swimlane_records_updater",
-    version="1.2",
+    name="swimlane_python_logger",
+    version="1.0",
     author="Jeremy m Crews",
     author_email="jeremy.m.crews@gmail.com",
-    description="Common Record Updater for Swimlane apps",
+    description="Logger wrapper class for Swimlane Integrations",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/jeremymcrews/swimlane_record_updater",
+    url="https://github.com/jeremymcrews/swimlane_python_logger",
     packages=setuptools.find_packages(),
     install_requres=[
-        'swimlane',
+        'logmatic-python',
     ],
     classifiers=(
         "Programming Language :: Python :: 2",
