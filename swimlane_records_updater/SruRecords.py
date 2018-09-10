@@ -6,9 +6,9 @@ import os
 
 
 class Setup:
-    def __init__(self, config_file, sw_config, sw_inputs):
+    def __init__(self, sw_config, sw_inputs):
         self.Config = ConfigParser.ConfigParser()
-        self.Config.read(config_file)
+        self.Config.read("config-sample.ini")
         for k, v in sw_inputs.iteritems():
             #setattr(self, re.sub(r'([a-z])([A-Z])', r'\1_\2', k).lower(), v)
             setattr(self, k.lower(), v)
@@ -31,8 +31,8 @@ class Setup:
 
 
 class Records(Setup):
-    def __init__(self, config_file, sw_config, sw_inputs, proxySet=False):
-        Setup.__init__(self, config_file, sw_config, sw_inputs)
+    def __init__(self, sw_config, sw_inputs, proxySet=False):
+        Setup.__init__(self, sw_config, sw_inputs)
         if proxySet:
             os.environ['HTTPS_PROXY'] = self.proxy_url
         self.swimlane = Swimlane(self.slhost, self.slapiuser, self.slapikey, verify_ssl=False)
