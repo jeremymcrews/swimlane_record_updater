@@ -1,15 +1,32 @@
 from swimlane import Swimlane
 from swimlane.core.search import EQ, NOT_EQ, CONTAINS, EXCLUDES, GT, GTE, LT, LTE
+import ConfigParser
 import re
 import os
 
 
 class Setup:
     def __init__(self, sw_config, sw_inputs):
+        self.Config = ConfigParser.ConfigParser()
+        self.Config.read("config.ini")
         for k, v in sw_inputs.iteritems():
             setattr(self, re.sub(r'([a-z])([A-Z])', r'\1_\2', k).lower(), v)
         for k, v in sw_config.iteritems():
             setattr(self, re.sub(r'([a-z])([A-Z])', r'\1_\2', k).lower(), v)
+
+    def ConfigSectionMap(self, section):
+        dict1 = {}
+        options = Config.options(section)
+        for option in options:
+            try:
+                dict1[option] = Config.get(section, option)
+                if dict1[option] == -1:
+                    DebugPrint("skip: %s" % option)
+            except:
+                print("exception on %s!" % option)
+                dict1[option] = None
+        return dict1
+
 
 class Records(Setup):
     def __init__(self, sw_config, sw_inputs, proxySet=False):
