@@ -6,13 +6,15 @@ import os
 
 
 class Setup:
-    def __init__(self, sw_config, sw_inputs):
+    def __init__(self, config_file, sw_config, sw_inputs):
         self.Config = ConfigParser.ConfigParser()
-        self.Config.read("config.ini")
+        self.Config.read(config_file)
         for k, v in sw_inputs.iteritems():
-            setattr(self, re.sub(r'([a-z])([A-Z])', r'\1_\2', k).lower(), v)
+            #setattr(self, re.sub(r'([a-z])([A-Z])', r'\1_\2', k).lower(), v)
+            setattr(self, k.lower(), v)
         for k, v in sw_config.iteritems():
-            setattr(self, re.sub(r'([a-z])([A-Z])', r'\1_\2', k).lower(), v)
+            #setattr(self, re.sub(r'([a-z])([A-Z])', r'\1_\2', k).lower(), v)
+            setattr(self, k.lower(), v)
 
     def ConfigSectionMap(self, section):
         dict1 = {}
@@ -29,11 +31,11 @@ class Setup:
 
 
 class Records(Setup):
-    def __init__(self, sw_config, sw_inputs, proxySet=False):
-        Setup.__init__(self, sw_config, sw_inputs)
+    def __init__(self, config_file, sw_config, sw_inputs, proxySet=False):
+        Setup.__init__(self, config_file, sw_config, sw_inputs)
         if proxySet:
             os.environ['HTTPS_PROXY'] = self.proxy_url
-        self.swimlane = Swimlane(self.host, self.api_user, self.api_key, verify_ssl=False)
+        self.swimlane = Swimlane(self.slhost, self.slapiuser, self.slapikey, verify_ssl=False)
         self.app = None
         self.appRaw = None
         self.records = None
@@ -60,12 +62,12 @@ class Records(Setup):
     def pullFieldsFromRecords(self, appId, recordId, fields=None):
         self.getRecord(appId, recordId)
         if fields is not None:
-            oldRecords = self.records
-            newRecords = {}
-            for r in oldRecords:
+            oldFields = self.records
+            newFields = {}
+            for r in oldFields:
                 for f in fields:
                     if f in r:
-                        newRecords[f] = oldRecords[f]
-            return newRecords
+                        newFields[f] = oldFields[f]
+            return newFields
         else:
             return self.records
