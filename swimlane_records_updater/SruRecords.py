@@ -34,7 +34,7 @@ class Records(Setup):
     def __init__(self, sw_config, sw_inputs, proxySet=False):
         Setup.__init__(self, sw_config, sw_inputs)
         if proxySet:
-            os.environ['HTTPS_PROXY'] = self.proxy_url
+            os.environ['HTTPS_PROXY'] = self.proxyurl
         self.swimlane = Swimlane(self.slhost, self.slapiuser, self.slapikey, verify_ssl=False)
         self.app = None
         self.appRaw = None
