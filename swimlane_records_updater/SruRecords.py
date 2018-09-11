@@ -1,3 +1,4 @@
+from slackclient import SlackClient
 from swimlane import Swimlane
 from swimlane.core.search import EQ, NOT_EQ, CONTAINS, EXCLUDES, GT, GTE, LT, LTE
 import ConfigParser
@@ -6,11 +7,10 @@ import os
 import re
 
 
-
 class Setup:
-    def __init__(self, sw_config, sw_inputs):
+    def __init__(self, config_file, sw_config, sw_inputs):
         self.Config = ConfigParser.ConfigParser()
-        self.Config.read("config-sample.ini")
+        self.Config.read(config_file)
         for k, v in sw_inputs.iteritems():
             #setattr(self, re.sub(r'([a-z])([A-Z])', r'\1_\2', k).lower(), v)
             setattr(self, k.lower(), v)
@@ -19,19 +19,6 @@ class Setup:
             setattr(self, k.lower(), v)
 
 
-    def ConfigSectionMap(self, section):
-        dict1 = {}
-        options = Config.options(section)
-        for option in options:
-            try:
-                dict1[option] = Config.get(section, option)
-                if dict1[option] == -1:
-                    DebugPrint("skip: %s" % option)
-            except:
-                print("exception on %s!" % option)
-                dict1[option] = None
-        return dict1
-
     def mergeTwoDicts(self, x, y):
         z = x.copy()  # start with x's keys and values
         z.update(y)  # modifies z with y's keys and values & returns None
@@ -39,16 +26,19 @@ class Setup:
 
 
 class Records(Setup):
-    def __init__(self, sw_config, sw_inputs, proxySet=False):
+    def __init__(self, config_file, sw_config, sw_inputs, proxySet=False, slack=False):
         self.app = None
         self.appRaw = None
         self.recordKeys = []
         self.records = None
         self.recordsFieldOnly = {}
         self.report = None
+        self.slackApiResults = {}
         self.sw_config = sw_config
         self.sw_inputs = sw_inputs
-        Setup.__init__(self, sw_config, sw_inputs)
+        Setup.__init__(self, config_file, sw_config, sw_inputs)
+        if slack:
+            self.sc = SlackClient(self.slacktoken)
         self.swimlane = Swimlane(self.slhost, self.slapiuser, self.slapikey, verify_ssl=False)
         if proxySet:
             os.environ['HTTPS_PROXY'] = self.proxyurl
@@ -99,3 +89,12 @@ class Records(Setup):
         else:
             recordData = self.mergeTwoDicts(self.mergeTwoDicts(self.sw_config, self.sw_inputs), self.recordsFieldOnly)
         return recordData
+
+    def formatSlackMessage(self, integrationId):
+        return self.Config.get('Slack', integrationId).format(self.applicationid, self.recordid)
+
+    def sendSlackMessage(self, channel, message, thread=False):
+        if thread:
+            self.slackApiResults = self.sc.api_call("chat.postMessage", channel=channel, text=message, thread_ts=thread)
+        else:
+            self.slackApiResults = self.sc.api_call("chat.postMessage", channel=channel, text=message)

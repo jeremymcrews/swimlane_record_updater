@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="swimlane_records_updater",
-    version="15",
+    version="17",
     author="Jeremy m Crews",
     author_email="jeremy.m.crews@gmail.com",
     description="Common Record Updater for Swimlane apps",
@@ -15,7 +15,8 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     install_requres=[
         'swimlane',
-        'ConfigParser'
+        'ConfigParser',
+        'slackclient'
     ],
     classifiers=(
         "Programming Language :: Python :: 2",
