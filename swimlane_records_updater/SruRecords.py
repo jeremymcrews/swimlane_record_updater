@@ -1,8 +1,10 @@
 from swimlane import Swimlane
 from swimlane.core.search import EQ, NOT_EQ, CONTAINS, EXCLUDES, GT, GTE, LT, LTE
 import ConfigParser
-import re
+import json
 import os
+import re
+
 
 
 class Setup:
@@ -15,6 +17,7 @@ class Setup:
         for k, v in sw_config.iteritems():
             #setattr(self, re.sub(r'([a-z])([A-Z])', r'\1_\2', k).lower(), v)
             setattr(self, k.lower(), v)
+
 
     def ConfigSectionMap(self, section):
         dict1 = {}
@@ -29,17 +32,26 @@ class Setup:
                 dict1[option] = None
         return dict1
 
+    def mergeTwoDicts(self, x, y):
+        z = x.copy()  # start with x's keys and values
+        z.update(y)  # modifies z with y's keys and values & returns None
+        return z
+
 
 class Records(Setup):
     def __init__(self, sw_config, sw_inputs, proxySet=False):
-        Setup.__init__(self, sw_config, sw_inputs)
-        if proxySet:
-            os.environ['HTTPS_PROXY'] = self.proxyurl
-        self.swimlane = Swimlane(self.slhost, self.slapiuser, self.slapikey, verify_ssl=False)
         self.app = None
         self.appRaw = None
+        self.recordKeys = []
         self.records = None
+        self.recordsFieldOnly = {}
         self.report = None
+        self.sw_config = sw_config
+        self.sw_inputs = sw_inputs
+        Setup.__init__(self, sw_config, sw_inputs)
+        self.swimlane = Swimlane(self.slhost, self.slapiuser, self.slapikey, verify_ssl=False)
+        if proxySet:
+            os.environ['HTTPS_PROXY'] = self.proxyurl
 
     def getApp(self, appId):
         self.app = self.swimlane.apps.get(id=appId)
@@ -52,6 +64,12 @@ class Records(Setup):
         self.getApp(appId)
         self.records = self.app.records.get(id=recordId)
 
+    def getRecordKeys(self, records):
+        keys = []
+        for r in records:
+            keys.append(r[0])
+        self.recordKeys = keys
+
     def getReport(self, appId, reportName, filters=None, limit=50):
         self.getApp(appId)
         self.report = self.app.reports.build(reportName, limit=limit)
@@ -61,13 +79,23 @@ class Records(Setup):
 
     def pullFieldsFromRecords(self, appId, recordId, fields=None):
         self.getRecord(appId, recordId)
-        if fields is not None:
+        self.getRecordKeys(self.records)
+        if fields:
             oldFields = self.records
             newFields = {}
-            for r in oldFields:
-                for f in fields:
-                    if f in r:
-                        newFields[f] = oldFields[f]
-            return newFields
+            for f in fields:
+                if f in self.recordKeys:
+                    newFields[f] = oldFields[f]
+            self.recordsFieldOnly = newFields
+            return self.recordsFieldOnly
         else:
             return self.records
+
+    def buildSwOutputs(self, appId, recordId, includedFields, staticFields=None):
+        recordData = None
+        self.pullFieldsFromRecords(appId, recordId, includedFields)
+        if staticFields:
+            recordData = self.mergeTwoDicts(self.mergeTwoDicts(self.mergeTwoDicts(self.sw_config, self.sw_inputs), self.recordsFieldOnly), staticFields)
+        else:
+            recordData = self.mergeTwoDicts(self.mergeTwoDicts(self.sw_config, self.sw_inputs), self.recordsFieldOnly)
+        return recordData
