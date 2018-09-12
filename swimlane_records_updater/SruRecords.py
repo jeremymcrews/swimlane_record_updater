@@ -41,7 +41,7 @@ class Records(Setup):
         Setup.__init__(self, config_file, sw_config, sw_inputs)
         if slack:
             self.sc = SlackClient(self.slackToken)
-        self.swimlane = Swimlane(self.swimlaneHost, self.swimlaneApiUser, self.swimlaneApiKey, verify_ssl=False)
+        self.swimlane = Swimlane(self.swimlaneApiHost, self.swimlaneApiUser, self.swimlaneApiKey, verify_ssl=False)
         if proxySet:
             os.environ['HTTPS_PROXY'] = self.proxyUrl
 
