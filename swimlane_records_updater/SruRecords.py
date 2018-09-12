@@ -90,13 +90,17 @@ class Records(Setup):
             self.recordData = self.mergeTwoDicts(self.mergeTwoDicts(self.mergeTwoDicts(self.sw_config, self.sw_inputs), self.recordsFieldOnly), staticFields)
         else:
             self.recordData = self.mergeTwoDicts(self.mergeTwoDicts(self.sw_config, self.sw_inputs), self.recordsFieldOnly)
-        self.sendSlackMessage(self.setSlackChannel(), self.formatSlackMessage(integrationId))
+        self.sendSlackMessage(self.formatSlackMessage(integrationId))
         return self. recordData
 
     def formatSlackMessage(self, integrationId):
         return self.Config.get('Slack', integrationId).format(self.ApplicationId, self.RecordId)
 
-    def sendSlackMessage(self, channel, message, ):
+    def setSlackChannel(self):
+        if self.recordData['Slack Channel'] is None:
+            self.recordData['Slack Channel'] = self.Config.get('Slack', 'primaryChannel')
+
+    def sendSlackMessage(self, message):
         self.setSlackChannel()
         if self.recordData['Slack TS'] is not None:
             self.slackApiResults = self.sc.api_call("chat.postMessage", channel=self.recordData['Slack Channel'], text=message, thread_ts=self.recordData['Slack Ts'])
@@ -104,6 +108,3 @@ class Records(Setup):
             self.slackApiResults = self.sc.api_call("chat.postMessage", channel=self.recordData['Slack Channel'], text=message)
             self.recordData['Slack TS'] = self.slackApiResults['message']['ts']
 
-    def setSlackChannel(self):
-        if self.recordData['Slack Channel'] is None:
-            self.recordData['Slack Channel'] = self.Config.get('Slack', 'primaryChannel')
