@@ -8,15 +8,17 @@ import re
 
 
 class Setup:
-    def __init__(self, config_file, sw_config, sw_inputs):
+    def __init__(self, config_file, sw_config, sw_inputs, sw_user=None):
         self.Config = ConfigParser.ConfigParser()
         self.Config.read(config_file)
         for k, v in sw_inputs.iteritems():
             #setattr(self, re.sub(r'([a-z])([A-Z])', r'\1_\2', k).lower(), v)
-            setattr(self, k.lower(), v)
+            setattr(self, k, v)
         for k, v in sw_config.iteritems():
             #setattr(self, re.sub(r'([a-z])([A-Z])', r'\1_\2', k).lower(), v)
-            setattr(self, k.lower(), v)
+            setattr(self, k, v)
+        #for k, v in sw_user.iteritems():
+        #   setattr(self, k, v)
 
 
     def mergeTwoDicts(self, x, y):
@@ -38,10 +40,10 @@ class Records(Setup):
         self.sw_inputs = sw_inputs
         Setup.__init__(self, config_file, sw_config, sw_inputs)
         if slack:
-            self.sc = SlackClient(self.slacktoken)
-        self.swimlane = Swimlane(self.slhost, self.slapiuser, self.slapikey, verify_ssl=False)
+            self.sc = SlackClient(self.slackToken)
+        self.swimlane = Swimlane(self.swimlaneHost, self.swimlaneApiUser, self.swimlaneApiKey, verify_ssl=False)
         if proxySet:
-            os.environ['HTTPS_PROXY'] = self.proxyurl
+            os.environ['HTTPS_PROXY'] = self.proxyUrl
 
     def getApp(self, appId):
         self.app = self.swimlane.apps.get(id=appId)
