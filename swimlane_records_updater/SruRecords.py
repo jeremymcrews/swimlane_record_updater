@@ -29,6 +29,12 @@ class Setup:
 
 class Records(Setup):
     def __init__(self, config_file, sw_config, sw_inputs, proxySet=False, slack=False):
+        Setup.__init__(self, config_file, sw_config, sw_inputs)
+        if slack:
+            self.sc = SlackClient(self.slackToken)
+        self.swimlane = Swimlane(self.swimlaneApiHost, self.swimlaneApiUser, self.swimlaneApiKey, verify_ssl=False)
+        if proxySet:
+            os.environ['HTTPS_PROXY'] = self.proxyUrl
         self.app = None
         self.appRaw = None
         self.recordData = None
@@ -39,12 +45,6 @@ class Records(Setup):
         self.slackApiResults = {}
         self.sw_config = sw_config
         self.sw_inputs = sw_inputs
-        Setup.__init__(self, config_file, sw_config, sw_inputs)
-        if slack:
-            self.sc = SlackClient(self.slackToken)
-        self.swimlane = Swimlane(self.swimlaneApiHost, self.swimlaneApiUser, self.swimlaneApiKey, verify_ssl=False)
-        if proxySet:
-            os.environ['HTTPS_PROXY'] = self.proxyUrl
 
     def getApp(self, appId):
         self.app = self.swimlane.apps.get(id=appId)
@@ -96,10 +96,6 @@ class Records(Setup):
     def formatSlackMessage(self, integrationId):
         return self.Config.get('Slack', integrationId).format(self.ApplicationId, self.RecordId)
 
-    def setSlackChannel(self):
-        if self.recordData['Slack Channel'] is None:
-            self.recordData['Slack Channel'] = self.Config.get('Slack', 'primaryChannel')
-
     def sendSlackMessage(self, message):
         self.setSlackChannel()
         if self.recordData['Slack TS'] is not None:
@@ -108,3 +104,6 @@ class Records(Setup):
             self.slackApiResults = self.sc.api_call("chat.postMessage", channel=self.recordData['Slack Channel'], text=message)
             self.recordData['Slack TS'] = self.slackApiResults['message']['ts']
 
+    def setSlackChannel(self):
+        if self.recordData['Slack Channel'] is None:
+            self.recordData['Slack Channel'] = self.Config.get('Slack', 'primaryChannel')
