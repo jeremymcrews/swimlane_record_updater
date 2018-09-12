@@ -99,7 +99,8 @@ class Records(Setup):
     def sendSlackMessage(self, message):
         self.setSlackChannel()
         if self.recordData['Slack TS'] is not None:
-            self.slackApiResults = self.sc.api_call("chat.postMessage", channel=self.recordData['Slack Channel'], text=message, thread_ts=self.recordData['Slack Ts'])
+            threadTs = self.recordData['Slack TS']
+            self.slackApiResults = self.sc.api_call("chat.postMessage", channel=self.recordData['Slack Channel'], text=message, thread_ts=threadTs)
         else:
             self.slackApiResults = self.sc.api_call("chat.postMessage", channel=self.recordData['Slack Channel'], text=message)
             self.recordData['Slack TS'] = self.slackApiResults['message']['ts']

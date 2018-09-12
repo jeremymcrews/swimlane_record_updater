@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="swimlane_records_updater",
-    version="2018.9.1",
+    version="2018.9.3",
     author="Jeremy m Crews",
     author_email="jeremy.m.crews@gmail.com",
     description="Common Record Updater for Swimlane apps",
