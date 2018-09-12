@@ -90,7 +90,7 @@ class Records(Setup):
             self.recordData = self.mergeTwoDicts(self.mergeTwoDicts(self.mergeTwoDicts(self.sw_config, self.sw_inputs), self.recordsFieldOnly), staticFields)
         else:
             self.recordData = self.mergeTwoDicts(self.mergeTwoDicts(self.sw_config, self.sw_inputs), self.recordsFieldOnly)
-        self.sendSlackMessage(recordUpdater.setSlackChannel(), recordUpdater.formatSlackMessage(integrationId))
+        self.sendSlackMessage(self.setSlackChannel(), self.formatSlackMessage(integrationId))
         return self. recordData
 
     def formatSlackMessage(self, integrationId):
