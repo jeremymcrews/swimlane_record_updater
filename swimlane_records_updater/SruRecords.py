@@ -22,9 +22,12 @@ class Records():
 
         if slack:
             self.sc = SlackClient(self.slackToken)
+
         self.swimlane = Swimlane(self.swimlaneApiHost, self.swimlaneApiUser, self.swimlaneApiKey, verify_ssl=False)
+
         if proxySet:
             os.environ['HTTPS_PROXY'] = self.proxyUrl
+
         self.app = None
         self.appRaw = None
         self.recordData = None
