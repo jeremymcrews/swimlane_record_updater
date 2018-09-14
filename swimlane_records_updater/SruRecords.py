@@ -7,29 +7,19 @@ import os
 import re
 
 
-class Setup:
-    def __init__(self, config_file, sw_config, sw_inputs, sw_user=None):
+class Records():
+    def __init__(self, config_file, sw_config, sw_inputs, proxySet=False, slack=False):
+
         self.Config = ConfigParser.ConfigParser()
         self.Config.read(config_file)
+
         for k, v in sw_inputs.iteritems():
-            #setattr(self, re.sub(r'([a-z])([A-Z])', r'\1_\2', k).lower(), v)
             setattr(self, k, v)
         for k, v in sw_config.iteritems():
-            #setattr(self, re.sub(r'([a-z])([A-Z])', r'\1_\2', k).lower(), v)
             setattr(self, k, v)
         #for k, v in sw_user.iteritems():
         #   setattr(self, k, v)
 
-
-    def mergeTwoDicts(self, x, y):
-        z = x.copy()  # start with x's keys and values
-        z.update(y)  # modifies z with y's keys and values & returns None
-        return z
-
-
-class Records(Setup):
-    def __init__(self, config_file, sw_config, sw_inputs, proxySet=False, slack=False):
-        Setup.__init__(self, config_file, sw_config, sw_inputs)
         if slack:
             self.sc = SlackClient(self.slackToken)
         self.swimlane = Swimlane(self.swimlaneApiHost, self.swimlaneApiUser, self.swimlaneApiKey, verify_ssl=False)
@@ -45,6 +35,17 @@ class Records(Setup):
         self.slackApiResults = {}
         self.sw_config = sw_config
         self.sw_inputs = sw_inputs
+
+    def __del__(self):
+        for k, v in sw_inputs.iteritems():
+            setattr(self, k, None)
+        for k, v in sw_config.iteritems():
+            setattr(self, k, None)
+
+    def mergeTwoDicts(self, x, y):
+        z = x.copy()  # start with x's keys and values
+        z.update(y)  # modifies z with y's keys and values & returns None
+        return z
 
     def getApp(self, appId):
         self.app = self.swimlane.apps.get(id=appId)
