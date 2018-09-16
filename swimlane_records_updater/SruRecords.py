@@ -24,17 +24,10 @@ class Setup:
 
 
 class Records(Setup):
-    def __init__(self, configFile, sw_config, sw_inputs, proxySet=False, slack=False):
+    def __init__(self, config_file, sw_config, sw_inputs, proxySet=False, slack=False):
         Setup.__init__(self, sw_config, sw_inputs)
-
         self.Config = ConfigParser.ConfigParser()
-        self.Config.read(configFile)
-
-        if slack:
-            self.sc = SlackClient(self.slackToken)
-        self.swimlane = Swimlane(self.swimlaneApiHost, self.swimlaneApiUser, self.swimlaneApiKey, verify_ssl=False)
-        if proxySet:
-            os.environ['HTTPS_PROXY'] = self.proxyUrl
+        self.Config.read(config_file)
         self.app = None
         self.appRaw = None
         self.recordData = None
@@ -45,6 +38,11 @@ class Records(Setup):
         self.slackApiResults = {}
         self.sw_config = sw_config
         self.sw_inputs = sw_inputs
+        if slack:
+            self.sc = SlackClient(self.slackToken)
+        self.swimlane = Swimlane(self.swimlaneApiHost, self.swimlaneApiUser, self.swimlaneApiKey, verify_ssl=False)
+        if proxySet:
+            os.environ['HTTPS_PROXY'] = self.proxyUrl
 
     def getApp(self):
         self.app = self.swimlane.apps.get(id=self.ApplicationId)
