@@ -1,9 +1,9 @@
-import setuptools
+from setuptools import setup, find_packages
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-setuptools.setup(
+setup(
     name="swimlane_records_updater",
     version="2018.9.15.1",
     author="Jeremy M Crews",
@@ -12,8 +12,8 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/jeremymcrews/swimlane_record_updater",
-    packages=setuptools.find_packages(),
-    install_requres=[
+    packages=find_packages(),
+    install_requires=[
         'swimlane',
         'ConfigParser',
         'slackclient'
