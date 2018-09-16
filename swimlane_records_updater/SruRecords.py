@@ -7,12 +7,8 @@ import os
 import re
 
 
-class Records():
-    def __init__(self, config_file, sw_config, sw_inputs, proxySet=False, slack=False):
-
-        self.Config = ConfigParser.ConfigParser()
-        self.Config.read(config_file)
-
+class Setup:
+    def __init__(self, sw_config, sw_inputs, sw_user=None):
         for k, v in sw_inputs.iteritems():
             setattr(self, k, v)
         for k, v in sw_config.iteritems():
@@ -20,14 +16,25 @@ class Records():
         #for k, v in sw_user.iteritems():
         #   setattr(self, k, v)
 
+
+    def mergeTwoDicts(self, x, y):
+        z = x.copy()  # start with x's keys and values
+        z.update(y)  # modifies z with y's keys and values & returns None
+        return z
+
+
+class Records(Setup):
+    def __init__(self, configFile, sw_config, sw_inputs, proxySet=False, slack=False):
+        Setup.__init__(self, sw_config, sw_inputs)
+
+        self.Config = ConfigParser.ConfigParser()
+        self.Config.read(configFile)
+
         if slack:
             self.sc = SlackClient(self.slackToken)
-
         self.swimlane = Swimlane(self.swimlaneApiHost, self.swimlaneApiUser, self.swimlaneApiKey, verify_ssl=False)
-
         if proxySet:
             os.environ['HTTPS_PROXY'] = self.proxyUrl
-
         self.app = None
         self.appRaw = None
         self.recordData = None
@@ -39,27 +46,16 @@ class Records():
         self.sw_config = sw_config
         self.sw_inputs = sw_inputs
 
-    def __del__(self):
-        for k, v in sw_inputs.iteritems():
-            setattr(self, k, None)
-        for k, v in sw_config.iteritems():
-            setattr(self, k, None)
+    def getApp(self):
+        self.app = self.swimlane.apps.get(id=self.ApplicationId)
 
-    def mergeTwoDicts(self, x, y):
-        z = x.copy()  # start with x's keys and values
-        z.update(y)  # modifies z with y's keys and values & returns None
-        return z
-
-    def getApp(self, appId):
-        self.app = self.swimlane.apps.get(id=appId)
-
-    def getAppRaw(self, appId):
-        self.app = self.swimlane.apps.get(id=appId)
+    def getAppRaw(self,):
+        self.app = self.swimlane.apps.get(id=self.ApplicationId)
         self.appRaw = self.app._raw
 
-    def getRecord(self, appId, recordId):
-        self.getApp(appId)
-        self.records = self.app.records.get(id=recordId)
+    def getRecord(self):
+        self.getApp()
+        self.records = self.app.records.get(id=self.RecordId)
 
     def getRecordKeys(self, records):
         keys = []
@@ -67,15 +63,15 @@ class Records():
             keys.append(r[0])
         self.recordKeys = keys
 
-    def getReport(self, appId, reportName, filters=None, limit=50):
-        self.getApp(appId)
+    def getReport(self, reportName, filters=None, limit=50):
+        self.getApp()
         self.report = self.app.reports.build(reportName, limit=limit)
         if filters is not None:
             for f in filters:
                 self.report.filter(f[0], f[1], f[2])
 
-    def pullFieldsFromRecords(self, appId, recordId, fields=None):
-        self.getRecord(appId, recordId)
+    def pullFieldsFromRecords(self, fields=None):
+        self.getRecord()
         self.getRecordKeys(self.records)
         if fields:
             oldFields = self.records
@@ -88,8 +84,8 @@ class Records():
         else:
             return self.records
 
-    def buildSwOutputs(self, integrationId, appId, recordId, includedFields, staticFields=None):
-        self.pullFieldsFromRecords(appId, recordId, includedFields)
+    def buildSwOutputs(self, integrationId,  includedFields, staticFields=None):
+        self.pullFieldsFromRecords(includedFields)
         if staticFields:
             self.recordData = self.mergeTwoDicts(self.mergeTwoDicts(self.mergeTwoDicts(self.sw_config, self.sw_inputs), self.recordsFieldOnly), staticFields)
         else:
@@ -111,5 +107,6 @@ class Records():
             self.recordData['Slack TS'] = self.slackApiResults['message']['ts']
 
     def setSlackChannel(self):
-        if self.recordData['Slack Channel'] is None:
-            self.recordData['Slack Channel'] = self.Config.get('Slack', 'primaryChannel')
+        slackChannel = self.recordData["Slack Channel"]
+        if slackChannel is None:
+            self.recordData["Slack Channel"] = self.Config.get('Slack', 'primaryChannel')
