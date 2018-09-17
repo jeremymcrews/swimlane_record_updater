@@ -25,8 +25,7 @@ class Setup:
 class Records(Setup):
     def __init__(self, config_file, sw_config, sw_inputs, proxySet=False, slackNotify=False):
         Setup.__init__(self, sw_config, sw_inputs)
-        self.Config = ConfigParser.ConfigParser()
-        self.Config.read(config_file)
+        self.config = json.loads(config_file)
         self.app = None
         self.appRaw = None
         self.proxySet = proxySet
@@ -96,7 +95,7 @@ class Records(Setup):
 
     def formatSlackMessage(self, integrationId):
         if self.slackNotify:
-            return self.Config.get('Slack', integrationId).format(self.ApplicationId, self.RecordId)
+            return self.config['Slack'][integrationId].format(self.ApplicationId, self.RecordId)
 
     def sendSlackMessage(self, message):
         if self.slackNotify:
@@ -113,4 +112,4 @@ class Records(Setup):
         if self.slackNotify:
             slackChannel = self.recordData["Slack Channel"]
             if slackChannel is None:
-                self.recordData["Slack Channel"] = self.Config.get('Slack', 'primaryChannel')
+                self.recordData["Slack Channel"] = self.config['Slack']['primaryChannel']
