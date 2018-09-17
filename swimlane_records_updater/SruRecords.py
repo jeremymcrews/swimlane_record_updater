@@ -16,7 +16,6 @@ class Setup:
         #for k, v in sw_user.iteritems():
         #   setattr(self, k, v)
 
-
     def mergeTwoDicts(self, x, y):
         z = x.copy()  # start with x's keys and values
         z.update(y)  # modifies z with y's keys and values & returns None
