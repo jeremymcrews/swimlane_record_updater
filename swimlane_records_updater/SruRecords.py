@@ -1,10 +1,8 @@
 from slackclient import SlackClient
 from swimlane import Swimlane
 from swimlane.core.search import EQ, NOT_EQ, CONTAINS, EXCLUDES, GT, GTE, LT, LTE
-import ConfigParser
 import json
 import os
-import re
 
 
 class Setup:
@@ -28,6 +26,10 @@ class Records(Setup):
         self.config = json.loads(config_file)
         self.app = None
         self.appRaw = None
+        self.crossApp = None
+        self.crossAppId = None
+        self.crossAppRaw = None
+        self.crossRecordId = None
         self.proxySet = proxySet
         if self.proxySet:
             os.environ['HTTPS_PROXY'] = self.proxyUrl
@@ -44,17 +46,29 @@ class Records(Setup):
         self.sw_config = sw_config
         self.sw_inputs = sw_inputs
 
+    def getApp(self, crossAppId=None):
+        if crossAppId is not None:
+            self.crossAppId = crossAppId
+            self.app = self.swimlane.apps.get(id=self.crossAppId)
+        else:
+            self.app = self.swimlane.apps.get(id=self.ApplicationId)
 
-    def getApp(self):
-        self.app = self.swimlane.apps.get(id=self.ApplicationId)
-
-    def getAppRaw(self,):
-        self.app = self.swimlane.apps.get(id=self.ApplicationId)
+    def getAppRaw(self, crossAppId=None):
+        if crossAppId is not None:
+            self.crossAppId = crossAppId
+            self.app = self.swimlane.apps.get(id=self.crossAppId)
+        else:
+            self.app = self.swimlane.apps.get(id=self.ApplicationId)
         self.appRaw = self.app._raw
 
-    def getRecord(self):
-        self.getApp()
-        self.records = self.app.records.get(id=self.RecordId)
+    def getRecord(self, crossAppId=None, crossRecordId=None):
+        if crossAppId is not None and crossRecordId is not None:
+            self.getApp(crossAppId)
+            self.crossRecordId = crossRecordId
+            self.records = self.app.records.get(id=self.crossRecordId)
+        else:
+            self.getApp()
+            self.records = self.app.records.get(id=self.RecordId)
 
     def getRecordKeys(self, records):
         keys = []
@@ -62,15 +76,21 @@ class Records(Setup):
             keys.append(r[0])
         self.recordKeys = keys
 
-    def getReport(self, reportName, filters=None, limit=50):
-        self.getApp()
+    def getReport(self, reportName, filters=None, crossAppId=None, limit=50):
+        if crossAppId is not None:
+            self.getApp(crossAppId)
+        else:
+            self.getApp()
         self.report = self.app.reports.build(reportName, limit=limit)
         if filters is not None:
             for f in filters:
                 self.report.filter(f[0], f[1], f[2])
 
-    def pullFieldsFromRecords(self, fields=None):
-        self.getRecord()
+    def pullFieldsFromRecords(self, crossAppId=None, crossRecordId=None, fields=None):
+        if crossAppId is not None and crossRecordId is not None:
+            self.getRecord(crossAppId, crossRecordId)
+        else:
+            self.getRecord()
         self.getRecordKeys(self.records)
         if fields:
             oldFields = self.records
